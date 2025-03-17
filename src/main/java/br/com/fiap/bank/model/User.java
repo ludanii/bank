@@ -18,7 +18,7 @@ public class User {
         this.cpf = cpf;
         this.nomeTitular = nomeTitular;
         this.dataAbertura = dataAbertura;
-        this.status = status;
+        this.status = "Ativa";
         this.tipo = tipo;
     }
 
