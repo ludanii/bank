@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.com.fiap.bank.exceptions.ValidationUtils;
+import br.com.fiap.bank.model.Deposito;
 import br.com.fiap.bank.model.Tipo;
 import br.com.fiap.bank.model.User;
 @Validated
@@ -75,9 +76,18 @@ public class BankController {
 
     @PutMapping("/bank/{numero}")
     public ResponseEntity<Object> encerrarUsuario(@PathVariable Long numero){
-        log.info("Encerrando conta de número " + numero);
+        log.info("Encerrando usuario " + numero);
         var userFiltrado = getUser(numero, null);
         userFiltrado.setStatus("Inativo");
+        return ResponseEntity.ok(userFiltrado);
+    }
+
+    @PutMapping("/bank/deposito")
+    public ResponseEntity<Object> deposito(@RequestBody Deposito deposito){
+        var userFiltrado = getUser(deposito.getNumero(), null);
+        ValidationUtils.validate(deposito.getValor() <= 0, HttpStatus.BAD_REQUEST, "O valor do depósito deve ser maior que 0!");
+        log.info("Debitando R$ " + deposito.getValor() + " na conta do usurio " + userFiltrado.getNomeTitular());
+        userFiltrado.setSaldoInicial(userFiltrado.getSaldoInicial() + deposito.getValor());
         return ResponseEntity.ok(userFiltrado);
     }
 
