@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.com.fiap.bank.exceptions.ValidationUtils;
-import br.com.fiap.bank.model.Deposito;
 import br.com.fiap.bank.model.Tipo;
+import br.com.fiap.bank.model.Transferencias;
 import br.com.fiap.bank.model.User;
 @Validated
 @RestController
@@ -83,12 +83,32 @@ public class BankController {
     }
 
     @PutMapping("/bank/deposito")
-    public ResponseEntity<Object> deposito(@RequestBody Deposito deposito){
+    public ResponseEntity<Object> deposito(@RequestBody Transferencias deposito){
         var userFiltrado = getUser(deposito.getNumero(), null);
         ValidationUtils.validate(deposito.getValor() <= 0, HttpStatus.BAD_REQUEST, "O valor do depósito deve ser maior que 0!");
         log.info("Debitando R$ " + deposito.getValor() + " na conta do usurio " + userFiltrado.getNomeTitular());
         userFiltrado.setSaldoInicial(userFiltrado.getSaldoInicial() + deposito.getValor());
         return ResponseEntity.ok(userFiltrado);
+    }
+
+    @PutMapping("/bank/saque")
+    public ResponseEntity<Object> saque(@RequestBody Transferencias saque){
+        var userFiltrado = getUser(saque.getNumero(), null);
+        ValidationUtils.validate(saque.getValor() <= 0, HttpStatus.BAD_REQUEST, "O valor do saque deve ser maior que 0!");
+        log.info("Sacando R$ " + saque.getValor() + " na conta do usurio " + userFiltrado.getNomeTitular());
+        userFiltrado.setSaldoInicial(userFiltrado.getSaldoInicial() - saque.getValor());
+        return ResponseEntity.ok(userFiltrado);
+    }
+
+    @PutMapping("/bank/pix")
+    public ResponseEntity<Object> pix(@RequestBody Transferencias pix){
+        var userOrigemFiltrado = getUser(pix.getNumeroOrigem(), null);
+        var userDestinoFiltrado = getUser(pix.getNumeroDestino(), null);
+        ValidationUtils.validate(pix.getValor() <= 0, HttpStatus.BAD_REQUEST, "O valor do pix deve ser maior que 0!");
+        log.info("Transferindo R$ " + pix.getValor() + " na conta do usurio " + userDestinoFiltrado.getNomeTitular() + " de usuario " + userOrigemFiltrado.getNomeTitular());
+        userDestinoFiltrado.setSaldoInicial(userDestinoFiltrado.getSaldoInicial() + pix.getValor());
+        userOrigemFiltrado.setSaldoInicial(userOrigemFiltrado.getSaldoInicial() - pix.getValor());
+        return ResponseEntity.ok(userOrigemFiltrado);
     }
 
    private User getUser(Long numero, String cpf) {
