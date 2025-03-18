@@ -41,7 +41,7 @@ public class BankController {
     @GetMapping("/")
     public ResponseEntity<String> getNomes() {
         log.info("Buscando Informações do projeto...");
-        var infoProjeto = "Nome do projeto: Bank \nNomes: Luisa Danielle e Michelle Pontenza";
+        var infoProjeto = "Nome do projeto: Bank \nNomes: Luisa Danielle, Michelle Pontenza e Ana Carolina de Castro Gonçalves";
         return ResponseEntity.ok(infoProjeto);
     }
     
@@ -95,6 +95,7 @@ public class BankController {
     public ResponseEntity<Object> saque(@RequestBody Transferencias saque){
         var userFiltrado = getUser(saque.getNumero(), null);
         ValidationUtils.validate(saque.getValor() <= 0, HttpStatus.BAD_REQUEST, "O valor do saque deve ser maior que 0!");
+        ValidationUtils.validate(saque.getValor() > userFiltrado.getSaldoInicial(), HttpStatus.BAD_REQUEST, "Saldo insuficiente!");
         log.info("Sacando R$ " + saque.getValor() + " na conta do usurio " + userFiltrado.getNomeTitular());
         userFiltrado.setSaldoInicial(userFiltrado.getSaldoInicial() - saque.getValor());
         return ResponseEntity.ok(userFiltrado);
@@ -105,6 +106,7 @@ public class BankController {
         var userOrigemFiltrado = getUser(pix.getNumeroOrigem(), null);
         var userDestinoFiltrado = getUser(pix.getNumeroDestino(), null);
         ValidationUtils.validate(pix.getValor() <= 0, HttpStatus.BAD_REQUEST, "O valor do pix deve ser maior que 0!");
+        ValidationUtils.validate(pix.getValor() > userOrigemFiltrado.getSaldoInicial(), HttpStatus.BAD_REQUEST, "Saldo insuficiente!");
         log.info("Transferindo R$ " + pix.getValor() + " na conta do usurio " + userDestinoFiltrado.getNomeTitular() + " de usuario " + userOrigemFiltrado.getNomeTitular());
         userDestinoFiltrado.setSaldoInicial(userDestinoFiltrado.getSaldoInicial() + pix.getValor());
         userOrigemFiltrado.setSaldoInicial(userOrigemFiltrado.getSaldoInicial() - pix.getValor());
